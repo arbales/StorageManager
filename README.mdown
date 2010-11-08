@@ -1,0 +1,26 @@
+## StorageManager
+Use StorageManager to simplify your interaction with the localStorage API.
+
+## JSON Store
+### Auto-keying
+
+    person = StorageManager.set {'name':'Jon Smith', 'phone':'301-555-6226'}
+    person.id # A3D5F6747EDA493A # Auto-set UUID
+
+#### Manual keying
+
+    bookmark = StorageManager.set {'id':'GitHub', 'url':'https://github.com/repositories/random'}
+    bookmark.id # GitHub
+
+## KV-store
+
+    preference = StorageManager.set 'play_sound', 'true'
+    preference # true
+
+    preference = StorageManager.get 'play_sound'
+    preference # true
+
+# Simple collection    
+    
+    StorageManager.all() # [object, object, object ...]
+
