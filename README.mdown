@@ -1,5 +1,5 @@
 ## StorageManager
-Use StorageManager to simplify your interaction with the localStorage API.
+Use StorageManager to simplify your interaction with the localStorage API. StorageManager has no external dependencies in better browsers.
 
 ## JSON Store
 ### Auto-keying
@@ -7,7 +7,7 @@ Use StorageManager to simplify your interaction with the localStorage API.
     person = StorageManager.set {'name':'Jon Smith', 'phone':'301-555-6226'}
     person.id # A3D5F6747EDA493A # Auto-set UUID
 
-#### Manual keying
+### Manual keying
 
     bookmark = StorageManager.set {'id':'GitHub', 'url':'https://github.com/repositories/random'}
     bookmark.id # GitHub
@@ -20,7 +20,17 @@ Use StorageManager to simplify your interaction with the localStorage API.
     preference = StorageManager.get 'play_sound'
     preference # true
 
-# Simple collection    
+## Extended Objects
+  
+    person.update {'phone': '412-268-2000'}
+    person.destroy
+
+## Collections
     
-    StorageManager.all() # [object, object, object ...]
+    everything = StorageManager.all() # [object, object, object ...]
+
+    named_things = everything.filter ((obj) ->
+      obj.name?
+    )
+    
 
