@@ -4,7 +4,8 @@ StorageManager = {
     if not data?
       false
     else
-      value = JSON.parse data
+      data = JSON.parse data
+      if (typeof data == 'object') then this.extend(data, this) else data
 
   destroy: (key) ->
     value = StorageManager.get key
@@ -15,18 +16,21 @@ StorageManager = {
   all: ->
     for item in localStorage
       collection << StorageManager.get localStorage.key item
-  
-  set: (key, value) ->
+    this.extend(collection, this)
+    
+  set: (key, value) ->    
     if not value? and not key.id?
       value = key
-      key = StorageManager.uuid
+      key = StorageManager.uuid()
     else if not value? and key.id?
       value = key
       key = value.id
     if typeof value == 'object'
       value.id = key
+        
     localStorage.setItem key, JSON.stringify value
-    return value
+    if (typeof value == 'object') then this.extend(value, this) else value
+    
   
   uuid: ->
     hexDigits = '0123456789ABCDEF'
@@ -35,4 +39,25 @@ StorageManager = {
     s[12] = 4
     s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1)
     s.join("")   
+  
+  extend: (obj, context) ->
+    if obj not instanceof Array
+      obj.save = ->
+        context.set(obj)
+      obj.destroy = ->
+        context.destroy(obj.id)
+      obj.update = (source) ->
+        for key, value of source
+          obj[key] = value
+        context.set(obj)
+    else
+      filter = (callback) ->
+      collection = for item in obj
+          if callback.call(item)
+            item
+      
+    obj
 }
+
+root = exports ? this
+root.StorageManager = StorageManager
