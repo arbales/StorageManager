@@ -1,5 +1,26 @@
-## StorageManager
+# StorageManager
 Use StorageManager to simplify your interaction with the localStorage API. StorageManager has no external dependencies in better browsers.
+
+## Class Factory
+
+    Person = StorageManager.model 'Person', {'name':''}
+    
+    employee = new Person()
+    employee.name = "Jon Smith"
+    employee.save() # instance
+    id = employee.id
+    
+    p = Person.get(id)
+    p.name # Jon Smith
+    
+### Event Listeners
+
+    Person.add_listener 'save', (instance)->
+      console.log instance.name + " was saved."
+
+    employee.save() # instance
+    # -> Joh Smith was saved
+      
 
 ## JSON Store
 ### Auto-keying

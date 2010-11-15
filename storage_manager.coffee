@@ -1,11 +1,56 @@
 StorageManager = {
-  get: (key) ->
+  listeners: {}
+  add_listener: (klass, event, callback) ->
+    if not this.listeners[klass]
+      this.listeners[klass] = {}
+    if not this.listeners[klass][event]
+      this.listeners[klass][event] = []
+    this.listeners[klass][event].push callback
+  fire: (klass, event, instance) ->
+    if this.listeners[klass]? && this.listeners[klass][event]?
+      for listener in this.listeners[klass][event]
+        listener(instance)
+    
+  model: (klassname, data) ->
+    klass = klassname
+    class klass
+      @get: (id) ->
+        obj = StorageManager.get(id,false)
+        new this(obj)
+      @add_listener: (event, callback)->
+        StorageManager.add_listener(klassname, event, callback)
+        true
+      constructor: (values) ->
+        this.meta = {}
+        this.meta.klassname = klassname
+        this.meta.properties = []
+        this.defaults()
+        for key,value of values
+          this[key] = value
+      defaults: ->
+        for key, value of data
+          if key != 'meta'
+            this[key] = value
+            this.meta.properties.push key
+          else
+            for mkey, mvalue of value
+              this.meta[key] = value
+      save: ->
+        to_save = {}
+        for property in this.meta.properties
+          to_save[property] = this[property]
+        this.id = StorageManager.set(to_save).id
+        StorageManager.fire(this.meta.klassname, 'save', this)
+        this
+        
+        
+  get: (key, extended) ->
     data = localStorage.getItem(key)
     if not data?
       false
     else
       data = JSON.parse data
-      if (typeof data == 'object') then this.extended(data, this) else data
+      if (typeof data == 'object' && extended != false) then this.extended(data, this) else data
 
   destroy: (key) ->
     value = StorageManager.get key
@@ -14,9 +59,8 @@ StorageManager = {
     value
 
   all: ->                   
-    len = localStorage.length
-    for i=0; i < len; len++;
-      console.log i
+#    len = localStorage.length
+    collection = for item in localStorage
       StorageManager.get localStorage.key item
     this.extended(collection, this)
     
