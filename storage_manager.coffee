@@ -35,8 +35,14 @@ StorageManager = {
           else
             for mkey, mvalue of value
               this.meta[key] = value
+      validate_key: ->
+        if this.id? && (this.meta.properties.indexOf('id') < 0)
+          this.meta.properties.push('id')
+          if this.id.toString().substring(0, this.meta.klassname.length) != this.meta.klassname
+            this.id = this.meta.klassname + "#" + this.id
       save: ->
         to_save = {}
+        this.validate_key()
         for property in this.meta.properties
           to_save[property] = this[property]
         this.id = StorageManager.set(to_save).id

@@ -72,9 +72,17 @@
         }
         return _result;
       };
+      klass.prototype.validate_key = function() {
+        var _ref;
+        if ((typeof (_ref = this.id) !== "undefined" && _ref !== null) && (this.meta.properties.indexOf('id') < 0)) {
+          this.meta.properties.push('id');
+          return this.id.toString().substring(0, this.meta.klassname.length) !== this.meta.klassname ? (this.id = this.meta.klassname + "#" + this.id) : null;
+        }
+      };
       klass.prototype.save = function() {
         var _i, _len, _ref, property, to_save;
         to_save = {};
+        this.validate_key();
         _ref = this.meta.properties;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           property = _ref[_i];

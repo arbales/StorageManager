@@ -7,8 +7,15 @@ Use StorageManager to simplify your interaction with the localStorage API. Stora
     
     employee = new Person()
     employee.name = "Jon Smith"
+    
+### Model keying
+StorageManager will prepend the name of your model onto keys for localStorage use. If you're working
+with data from a server (non UUID-keyed models) this will prevent collisions in the non-tabular
+localStorage DB. 
+    
+    employee.id = 4
     employee.save() # instance
-    id = employee.id
+    id = employee.id # Employee#4
     
     p = Person.get(id)
     p.name # Jon Smith
@@ -23,10 +30,10 @@ Use StorageManager to simplify your interaction with the localStorage API. Stora
       
 
 ## JSON Store
-### Auto-keying
+### Auto-keying with UUID's
 
     person = StorageManager.set {'name':'Jon Smith', 'phone':'301-555-6226'}
-    person.id # A3D5F6747EDA493A # Auto-set UUID
+    person.id # 97705CBB851E42588FEAD9453D60699B # Auto-set UUID
 
 ### Manual keying
 
