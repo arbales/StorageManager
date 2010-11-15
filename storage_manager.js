@@ -9,7 +9,7 @@
         return false;
       } else {
         data = JSON.parse(data);
-        return (typeof data === 'object') ? this.extend(data, this) : data;
+        return (typeof data === 'object') ? this.extended(data, this) : data;
       }
     },
     destroy: function(key) {
@@ -24,9 +24,10 @@
       _ref = localStorage;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         item = _ref[_i];
-        collection << StorageManager.get(localStorage.key(item));
+        console.log(item);
+        StorageManager.get(localStorage.key(item));
       }
-      return this.extend(collection, this);
+      return this.extended(collection, this);
     },
     set: function(key, value) {
       var _ref;
@@ -41,7 +42,7 @@
         value.id = key;
       }
       localStorage.setItem(key, JSON.stringify(value));
-      return (typeof value === 'object') ? this.extend(value, this) : value;
+      return (typeof value === 'object') ? this.extended(value, this) : value;
     },
     uuid: function() {
       var _result, hexDigits, num, s;
@@ -57,8 +58,8 @@
       s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1);
       return s.join("");
     },
-    extend: function(obj, context) {
-      var _i, _len, _ref, _result, collection, filter, item;
+    extended: function(obj, context) {
+      var filter;
       if (!(obj instanceof Array)) {
         obj.save = function() {
           return context.set(obj);
@@ -77,15 +78,17 @@
           return context.set(obj);
         };
       } else {
-        filter = function(callback) {};
-        collection = (function() {
-          _result = []; _ref = obj;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            _result.push(callback.call(item) ? item : null);
-          }
-          return _result;
-        })();
+        filter = function(callback) {
+          var _i, _len, _ref, _result, collection, item;
+          return (collection = (function() {
+            _result = []; _ref = obj;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
+              _result.push(callback.call(item) ? item : null);
+            }
+            return _result;
+          })());
+        };
       }
       return obj;
     }

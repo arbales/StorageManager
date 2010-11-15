@@ -5,7 +5,7 @@ StorageManager = {
       false
     else
       data = JSON.parse data
-      if (typeof data == 'object') then this.extend(data, this) else data
+      if (typeof data == 'object') then this.extended(data, this) else data
 
   destroy: (key) ->
     value = StorageManager.get key
@@ -13,10 +13,12 @@ StorageManager = {
     value.id = undefined
     value
 
-  all: ->
-    for item in localStorage
-      collection << StorageManager.get localStorage.key item
-    this.extend(collection, this)
+  all: ->                   
+    len = localStorage.length
+    for i=0; i < len; len++;
+      console.log i
+      StorageManager.get localStorage.key item
+    this.extended(collection, this)
     
   set: (key, value) ->    
     if not value? and not key.id?
@@ -29,7 +31,7 @@ StorageManager = {
       value.id = key
         
     localStorage.setItem key, JSON.stringify value
-    if (typeof value == 'object') then this.extend(value, this) else value
+    if (typeof value == 'object') then this.extended(value, this) else value
     
   
   uuid: ->
@@ -40,7 +42,7 @@ StorageManager = {
     s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1)
     s.join("")   
   
-  extend: (obj, context) ->
+  extended: (obj, context) ->
     if obj not instanceof Array
       obj.save = ->
         context.set(obj)
@@ -52,9 +54,9 @@ StorageManager = {
         context.set(obj)
     else
       filter = (callback) ->
-      collection = for item in obj
-          if callback.call(item)
-            item
+	      collection = for item in obj
+	          if callback.call(item)
+	            item   
       
     obj
 }
