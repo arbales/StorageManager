@@ -49,7 +49,6 @@ StorageManager = {
         StorageManager.fire(this.meta.klassname, 'save', this)
         this
         
-        
   get: (key, extended) ->
     data = localStorage.getItem(key)
     if not data?

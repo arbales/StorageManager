@@ -7,6 +7,7 @@ Use StorageManager to simplify your interaction with the localStorage API. Stora
     
     employee = new Person()
     employee.name = "Jon Smith"
+    employee.save()
     
 ### Model keying
 StorageManager will prepend the name of your model onto keys for localStorage use. If you're working
@@ -14,7 +15,7 @@ with data from a server (non UUID-keyed models) this will prevent collisions in 
 localStorage DB. 
     
     employee.id = 4
-    employee.save() # instance
+    employee.save()
     id = employee.id # Employee#4
     
     p = Person.get(id)
