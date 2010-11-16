@@ -1,8 +1,24 @@
 (function() {
-  var StorageManager, root;
+  var CafeMapper, exports, root;
   var __hasProp = Object.prototype.hasOwnProperty;
-  StorageManager = {
+  exports = {};
+  CafeMapper = {
+    active_engines: [],
     listeners: {},
+    uuid: function() {
+      var _result, hexDigits, num, s;
+      hexDigits = '0123456789ABCDEF';
+      s = (function() {
+        _result = [];
+        for (num = 0; num < 32; num++) {
+          _result.push(hexDigits.substr(Math.floor(Math.random() * 0x10), 1));
+        }
+        return _result;
+      })();
+      s[12] = 4;
+      s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1);
+      return s.join("");
+    },
     add_listener: function(klass, event, callback) {
       if (!this.listeners[klass]) {
         this.listeners[klass] = {};
@@ -42,11 +58,11 @@
       };
       klass.get = function(id) {
         var obj;
-        obj = StorageManager.get(id, false);
-        return new this(obj);
+        obj = CafeMapper.Base.get(id, false) || CafeMapper.Base.get(klassname + "#" + id, false);
+        return obj === false ? false : new this(obj);
       };
       klass.add_listener = function(event, callback) {
-        StorageManager.add_listener(klassname, event, callback);
+        CafeMapper.add_listener(klassname, event, callback);
         return true;
       };
       klass.prototype.defaults = function() {
@@ -88,12 +104,14 @@
           property = _ref[_i];
           to_save[property] = this[property];
         }
-        this.id = StorageManager.set(to_save).id;
-        StorageManager.fire(this.meta.klassname, 'save', this);
+        this.id = CafeMapper.Base.set(to_save).id;
+        CafeMapper.Base.fire(this.meta.klassname, 'save', this);
         return this;
       };
       return klass;
-    },
+    }
+  };
+  CafeMapper.Base = {
     get: function(key, extended) {
       var data;
       data = localStorage.getItem(key);
@@ -106,7 +124,7 @@
     },
     destroy: function(key) {
       var value;
-      value = StorageManager.get(key);
+      value = this.get(key);
       localStorage.removeItem(key);
       value.id = undefined;
       return value;
@@ -117,17 +135,17 @@
         _result = []; _ref = localStorage;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           item = _ref[_i];
-          _result.push(StorageManager.get(localStorage.key(item)));
+          _result.push(this.get(localStorage.key(item)));
         }
         return _result;
-      })();
+      }).call(this);
       return this.extended(collection, this);
     },
     set: function(key, value) {
       var _ref;
       if (!(typeof value !== "undefined" && value !== null) && !(typeof (_ref = key.id) !== "undefined" && _ref !== null)) {
         value = key;
-        key = StorageManager.uuid();
+        key = CafeMapper.uuid();
       } else if (!(typeof value !== "undefined" && value !== null) && (typeof (_ref = key.id) !== "undefined" && _ref !== null)) {
         value = key;
         key = value.id;
@@ -137,20 +155,6 @@
       }
       localStorage.setItem(key, JSON.stringify(value));
       return (typeof value === 'object') ? this.extended(value, this) : value;
-    },
-    uuid: function() {
-      var _result, hexDigits, num, s;
-      hexDigits = '0123456789ABCDEF';
-      s = (function() {
-        _result = [];
-        for (num = 0; num < 32; num++) {
-          _result.push(hexDigits.substr(Math.floor(Math.random() * 0x10), 1));
-        }
-        return _result;
-      })();
-      s[12] = 4;
-      s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1);
-      return s.join("");
     },
     extended: function(obj, context) {
       var filter;
@@ -187,6 +191,7 @@
       return obj;
     }
   };
-  root = (typeof exports !== "undefined" && exports !== null) ? exports : this;
-  root.StorageManager = StorageManager;
+  root = this;
+  root.CafeMapper = CafeMapper;
+  return exports;
 }).call(this);

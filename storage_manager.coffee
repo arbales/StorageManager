@@ -1,5 +1,13 @@
-StorageManager = {
+CafeMapper = {
+  active_engines: []
   listeners: {}
+  uuid: ->
+    hexDigits = '0123456789ABCDEF'
+    s = for num in [0...32]
+      hexDigits.substr Math.floor(Math.random() * 0x10), 1
+    s[12] = 4
+    s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1)
+    s.join("")
   add_listener: (klass, event, callback) ->
     if not this.listeners[klass]
       this.listeners[klass] = {}
@@ -15,10 +23,13 @@ StorageManager = {
     klass = klassname
     class klass
       @get: (id) ->
-        obj = StorageManager.get(id,false)
-        new this(obj)
+        obj = CafeMapper.Base.get(id,false) || CafeMapper.Base.get(klassname+"#"+id,false)
+        if obj == false
+          false
+        else
+          new this(obj)
       @add_listener: (event, callback)->
-        StorageManager.add_listener(klassname, event, callback)
+        CafeMapper.add_listener(klassname, event, callback)
         true
       constructor: (values) ->
         this.meta = {}
@@ -45,70 +56,62 @@ StorageManager = {
         this.validate_key()
         for property in this.meta.properties
           to_save[property] = this[property]
-        this.id = StorageManager.set(to_save).id
-        StorageManager.fire(this.meta.klassname, 'save', this)
+        this.id = CafeMapper.Base.set(to_save).id
+        CafeMapper.Base.fire(this.meta.klassname, 'save', this)
         this
-        
-  get: (key, extended) ->
-    data = localStorage.getItem(key)
-    if not data?
-      false
-    else
-      data = JSON.parse data
-      if (typeof data == 'object' && extended != false) then this.extended(data, this) else data
-
-  destroy: (key) ->
-    value = StorageManager.get key
-    localStorage.removeItem key
-    value.id = undefined
-    value
-
-  all: ->                   
-#    len = localStorage.length
-    collection = for item in localStorage
-      StorageManager.get localStorage.key item
-    this.extended(collection, this)
-    
-  set: (key, value) ->    
-    if not value? and not key.id?
-      value = key
-      key = StorageManager.uuid()
-    else if not value? and key.id?
-      value = key
-      key = value.id
-    if typeof value == 'object'
-      value.id = key
-        
-    localStorage.setItem key, JSON.stringify value
-    if (typeof value == 'object') then this.extended(value, this) else value
-    
-  
-  uuid: ->
-    hexDigits = '0123456789ABCDEF'
-    s = for num in [0...32]
-      hexDigits.substr Math.floor(Math.random() * 0x10), 1
-    s[12] = 4
-    s[16] = hexDigits.substr((s[16] & 0x3) | 0x8, 1)
-    s.join("")   
-  
-  extended: (obj, context) ->
-    if obj not instanceof Array
-      obj.save = ->
-        context.set(obj)
-      obj.destroy = ->
-        context.destroy(obj.id)
-      obj.update = (source) ->
-        for key, value of source
-          obj[key] = value
-        context.set(obj)
-    else
-      filter = (callback) ->
-	      collection = for item in obj
-	          if callback.call(item)
-	            item   
-      
-    obj
 }
 
-root = exports ? this
-root.StorageManager = StorageManager
+CafeMapper.Base = {
+    get: (key, extended) ->
+      data = localStorage.getItem(key)
+      if not data?
+        false
+      else
+        data = JSON.parse data
+        if (typeof data == 'object' && extended != false) then this.extended(data, this) else data
+
+    destroy: (key) ->
+      value = this.get key
+      localStorage.removeItem key
+      value.id = undefined
+      value
+
+    all: ->                   
+  #    len = localStorage.length
+      collection = for item in localStorage
+        this.get localStorage.key item
+      this.extended(collection, this)
+
+    set: (key, value) ->    
+      if not value? and not key.id?
+        value = key
+        key = CafeMapper.uuid()
+      else if not value? and key.id?
+        value = key
+        key = value.id
+      if typeof value == 'object'
+        value.id = key
+
+      localStorage.setItem key, JSON.stringify value
+      if (typeof value == 'object') then this.extended(value, this) else value
+
+    extended: (obj, context) ->
+      if obj not instanceof Array
+        obj.save = ->
+          context.set(obj)
+        obj.destroy = ->
+          context.destroy(obj.id)
+        obj.update = (source) ->
+          for key, value of source
+            obj[key] = value
+          context.set(obj)
+      else
+        filter = (callback) ->
+  	      collection = for item in obj
+  	          if callback.call(item)
+  	            item   
+
+      obj
+}
+root = this
+root.CafeMapper = CafeMapper
